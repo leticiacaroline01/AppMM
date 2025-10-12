@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Agrícola Completa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #4CAF50; --primary-hover: #45a049;
+            --header-gradient: linear-gradient(135deg, #2e7d32 0%, #388e3c 100%);
+            --card-bg: #ffffff; --body-bg: #f4f6f8; --text-color: #333; --text-light: #555;
+            --border-color: #e0e0e0; --shadow-color: rgba(0, 0, 0, 0.08); --success-color: #2e7d32;
+            --error-color: #d32f2f; --warning-color: #f57c00; --input-bg: #f0f0f0;
+            --edit-color: #ff9800; --edit-hover: #f57c00;
+        }
+        body { font-family: 'Roboto', sans-serif; margin: 0; background-color: var(--body-bg); color: var(--text-color); line-height: 1.6; }
+        
+        /* --- ALTERAÇÃO 1: LARGURA MÁXIMA REDUZIDA --- */
+        .container { width: 90%; max-width: 800px; margin: 2rem auto; }
+        .screen { display: none; }
+
+        /* Estilos Comuns */
+        .card { background-color: var(--card-bg); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px var(--shadow-color); margin-bottom: 2rem; }
+        .card h2 { margin-top: 0; font-weight: 500; color: var(--success-color); }
+        .header { background: var(--header-gradient); color: white; padding: 1.5rem 0; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .header h1 { margin: 0; font-size: 2.2rem; }
+        .header .sub-heading { margin: 0.2rem 0; font-size: 1.1rem; font-weight: 300; opacity: 0.9; }
+        .button { display: block; width: 100%; background: var(--primary-color); color: white; padding: 15px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; border: none; cursor: pointer; text-align: center; margin-top: 1.5rem; transition: all 0.3s; }
+        .button:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+        .footer { background-color: #333; color: white; text-align: center; padding: 1.5rem 0; }
+        .back-link { margin-top: 1rem; display: inline-block; cursor: pointer; color: var(--primary-color); font-weight: 500; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+
+        /* Tela de Idioma */
+        #language-selection-screen { display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .language-container { text-align: center; padding: 40px 50px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transform: scale(0); animation: pop-in 0.5s forwards ease-out; background-color: var(--card-bg); }
+        @keyframes pop-in { to { transform: scale(1); } }
+        .language-option img { width: 80px; height: auto; border-radius: 50%; box-shadow: 0 4px 10px var(--shadow-color); transition: box-shadow 0.3s ease; }
+        .language-option:hover img { box-shadow: 0 6px 15px rgba(76, 175, 80, 0.2); }
+        .language-selector { display: flex; justify-content: center; gap: 25px; }
+        .language-option { text-decoration: none; color: var(--text-light); font-weight: 500; transition: transform 0.3s ease, color 0.3s ease; }
+        .language-option:hover { transform: translateY(-5px); color: var(--primary-color); }
+
+        /* Calculadora NDE */
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-light); }
+        .form-group input, .form-group select { width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        #error-message { display: none; margin-top: 1.5rem; padding: 1.0rem; border-radius: 8px; font-size: 1rem; text-align: center; font-weight: bold; background-color: #ffcdd2 !important; border: 2px solid var(--error-color) !important; color: var(--error-color) !important; }
+        fieldset { border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; }
+        
+        /* Amostragem Sequencial */
+        #sampling-list { display: flex; flex-direction: column; gap: 12px; margin-top: 1.5rem; max-height: 40vh; overflow-y: auto; padding: 5px; }
+        .sample-row { display: flex; align-items: center; gap: 10px; }
+        .sample-row span { font-weight: 500; font-size: 1.1rem; color: var(--text-light); width: 30px; text-align: right; }
+        .sample-row input { flex-grow: 1; border: none; background-color: var(--input-bg); color: var(--text-color); border-radius: 25px; padding: 12px 18px; font-size: 1.1rem; text-align: center; }
+        .sample-row input.completed { background-color: var(--success-color); color: white; font-weight: bold; }
+        .button-container { display: flex; gap: 5px; }
+        .button-small { padding: 8px 12px; font-size: 0.9rem; border-radius: 20px; min-width: 90px; }
+        .button-correct { background-color: var(--edit-color); }
+        .button-correct:hover { background-color: var(--edit-hover); }
+        .button-reset { background-color: var(--text-light); color: white; }
+        .button-reset:hover { background-color: #333; transform: translateY(-2px); }
+        #decision-area { padding: 1.5rem; border-radius: 8px; font-size: 1.8rem; text-align: center; font-weight: bold; margin-top: 1.5rem; }
+        .decision-control { background-color: #ffcdd2; color: var(--error-color); }
+        .decision-nocontrol { background-color: #c8e6c9; color: var(--success-color); }
+        .decision-continue { background-color: #ffecb3; color: var(--warning-color); }
+        #stats-area { text-align: center; color: var(--text-light); font-size: 1rem; margin-top: 1rem; min-height: 1.2em; }
+
+        /* --- ALTERAÇÃO 2: OTIMIZAÇÕES PARA CELULAR --- */
+        @media (max-width: 600px) {
+            body {
+                font-size: 15px; /* Reduz a fonte base em telas pequenas */
+            }
+            .container {
+                width: 95%; /* Usa mais espaço da tela */
+                margin: 1rem auto;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .card {
+                padding: 1.5rem 1rem; /* Reduz o espaçamento interno */
+            }
+            .language-container {
+                padding: 30px 20px;
+            }
+            .language-option img {
+                width: 70px; /* Diminui o tamanho das bandeiras */
+            }
+            #decision-area {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="language-selection-screen" class="screen">
+        <div class="language-container">
+            <h1>Selecione o seu idioma <br> Select your language <br> Seleccione su idioma</h1>
+            <div class="language-selector">
+                <a href="#" class="language-option" data-lang="pt"><img src="https://flagcdn.com/w160/br.png" alt="Bandeira do Brasil"><span>Português</span></a>
+                <a href="#" class="language-option" data-lang="en"><img src="https://flagcdn.com/w160/us.png" alt="Bandeira dos EUA"><span>English</span></a>
+                <a href="#" class="language-option" data-lang="es"><img src="https://flagcdn.com/w160/es.png" alt="Bandeira da Espanha"><span>Español</span></a>
+            </div>
+        </div>
+    </div>
+
+	<div id="calculator-screen" class="screen">
+ 	<header class="header">
+   	 <img id="header-logo" src="https://i.imgur.com/jRbFaGJ.png" alt="Logo" width="100">
+    		<div class="header-text">
+     	 <h1 id="calc-main-title">Mosca minadora tomate</h1>
+      	<p id="calc-subtitle" class="sub-heading">Cálculo do NDE para amostragem</p>
+   	 </div>
+  	</header>
+
+        <main class="main-content container">
+            <section class="card">
+                <h2 id="form-title"></h2>
+                <form id="nde-form">
+                    <fieldset>
+                        <div class="form-group"><label for="tipo_producao" id="yield-label"></label><select id="tipo_producao" name="tipo_producao"><option id="yield-option-system" value="media"></option><option id="yield-option-manual" value="manual"></option></select><input type="number" id="producao" name="producao" style="display:none; margin-top: 10px;"></div>
+                        <div class="form-group"><label for="tipo_preco" id="price-label"></label><select id="tipo_preco" name="tipo_preco"><option id="price-option-system" value="media"></option><option id="price-option-manual" value="manual"></option></select><input type="number" id="preco_saca" name="preco_saca" step="0.01" style="display:none; margin-top: 10px;"></div>
+                        <div class="form-group"><label for="tecnologia" id="tech-label"></label><select id="tecnologia" name="tecnologia" required><option id="tech-option-select" value="" disabled selected></option><option value="manual">Manual</option><option value="trator">Trator</option><option value="aviao">Avião / Plane</option><option value="drone">Drone</option></select></div>
+                    </fieldset>
+                    <button type="button" class="button" id="main-action-button"></button>
+                </form>
+                <div id="error-message"></div>
+            </section>
+            <section class="card">
+                <h2 id="info-title"></h2>
+                <p id="info-text" style="text-align: justify;"></p>
+            </section>
+            <div style="text-align: center;"><a href="#" id="back-to-lang-select" class="back-link"></a></div>
+        </main>
+    </div>
+
+    <div id="sequential-sampling-screen" class="screen">
+        <header class="header"><h1 id="seq-main-title"></h1></header>
+        <main class="container">
+            <section class="card">
+                <h2 id="seq-sampling-title"></h2>
+                <p id="seq-info-text"></p>
+                <div id="sampling-list"></div>
+                <div id="decision-area"></div>
+                <div id="stats-area"></div>
+                <button type="button" class="button button-reset" id="reset-btn" style="margin-top:2rem"></button>
+            </section>
+            <section class="card">
+                <h2 id="seq-chart-title"></h2>
+                <canvas id="samplingChart"></canvas>
+            </section>
+            <div style="text-align: center;"><a href="#" id="back-to-calculator" class="back-link"></a></div>
+        </main>
+    </div>
+
+    <footer class="footer"><div class="container"><p id="footer-text"></p></div></footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- ESTADO GLOBAL E TRADUÇÕES ---
+        const appState = { nde: null, lang: 'pt' };
+        const translations = {
+            'pt': {
+                calcMainTitle: ' ', calcSubtitle: ' ', formTitle: 'Cálculo do NDE', yieldLabel: 'Produtividade1 (caixas/ha)', yieldOptionSystem: 'Usar valor do sistema (3000)', yieldOptionManual: 'Digitar manualmente', yieldPlaceholder: 'Digite a produção em caixas/ha', priceLabel: 'Preço (R$/caixa)', priceOptionSystem: 'Usar valor do sistema (R$ 50,00)', priceOptionManual: 'Digitar manualmente', pricePlaceholder: 'Digite o preço por caixa (R$)', techLabel: 'Tecnologia de Aplicação', techOptionSelect: 'Selecione uma opção', mainActionButton: 'Iniciar amostragem', validationError: 'Por favor, preencha todos os campos com valores válidos.', infoTitle: 'O que é o NDE?', infoText: 'O Nível de Dano Econômico (NDE) é a densidade da praga na qual o custo do controle se iguala ao prejuízo econômico que ela causaria. Esta ferramenta calcula o NDE para ser usado na amostragem sequencial.', footerText: '© Todos os direitos reservados.', backToLangSelect: 'Voltar para seleção de idioma',
+                seqMainTitle: 'Amostragem', seqSamplingTitle: '', seqInfoText: 'Insira o número de minas/folíolo para cada planta amostrada. A decisão será recomendada assim que possível.', samplePlaceholder: 'Nº de minas', addBtn: 'Adicionar', correctBtn: 'Corrigir', resetBtn: 'Reiniciar amostragem', decisionControl: 'DECISÃO: Controlar a praga!', decisionNoControl: 'DECISÃO: Não controlar.', decisionContinue: 'Continue amostrando...', decisionMaxSamples: 'Máximo de amostras atingido. Decisão final:', seqChartTitle: 'Gráfico de Decisão', chartYAxis: 'Número Acumulado de Minas', chartXAxis: 'Número de Plantas Amostradas', statsText: 'Média: {avg} ({count} amostras)', backToCalculator: 'Voltar para Calculadora de NDE'
+            },
+            'en': { /* English Translations */ }, 'es': { /* Spanish Translations */ }
+        };
+        translations.en = {...translations.pt, ...{
+            calcMainTitle: 'Leaf Miner in Tomato', calcSubtitle: 'EIL Calculation for Sequential Sampling', formTitle: 'Parameters for EIL Calculation', yieldLabel: 'Yield (boxes/ha)', yieldOptionSystem: 'Use system value (3000)', yieldOptionManual: 'Enter manually', yieldPlaceholder: 'Enter yield in boxes/ha', priceLabel: 'Price ($/box)', priceOptionSystem: 'Use system value ($ 50.00)', priceOptionManual: 'Enter manually', pricePlaceholder: 'Enter price per box ($)', techLabel: 'Application Technology', techOptionSelect: 'Select an option', mainActionButton: 'Start Sequential Sampling', validationError: 'Please fill all fields with valid values.', infoTitle: 'What is the EIL?', infoText: 'The Economic Injury Level (EIL) is the pest density at which the cost of control equals the economic loss it would cause. This tool calculates the EIL for use in sequential sampling.', footerText: '© All rights reserved.', backToLangSelect: 'Back to language selection',
+            seqMainTitle: 'Wald Sequential Sampling', seqSamplingTitle: 'Sampling', seqInfoText: 'Enter the mines/leaflet for each plant. A decision will be recommended ASAP (min. 6 samples).', samplePlaceholder: 'Nº of mines', addBtn: 'Add', correctBtn: 'Edit', resetBtn: 'Reset sampling', decisionControl: 'DECISION: Control the pest!', decisionNoControl: 'DECISION: Do not control.', decisionContinue: 'Continue sampling...', decisionMaxSamples: 'Maximum samples. Decision:', seqChartTitle: 'Decision Chart', chartYAxis: 'Cumulative Number of Mines', chartXAxis: 'Number of Plants Sampled', statsText: 'Average: {avg} ({count} samples)', backToCalculator: 'Back to EIL Calculator'
+        }};
+        translations.es = {...translations.pt, ...{
+            calcMainTitle: 'Minador de la Hoja en Tomate', calcSubtitle: 'Cálculo de NDE para Muestreo Secuencial', formTitle: 'Parámetros para el Cálculo del NDE', yieldLabel: 'Productividad (cajas/ha)', yieldOptionSystem: 'Usar valor del sistema (3000)', yieldOptionManual: 'Introducir manualmente', yieldPlaceholder: 'Introduzca la producción en cajas/ha', priceLabel: 'Precio ($/caja)', priceOptionSystem: 'Usar valor del sistema ($ 50,00)', priceOptionManual: 'Introducir manualmente', pricePlaceholder: 'Introduzca el precio por caja ($)', techLabel: 'Tecnología de Aplicación', techOptionSelect: 'Seleccione una opción', mainActionButton: 'Iniciar Muestreo Secuencial', validationError: 'Por favor, rellene todos los campos con valores válidos.', infoTitle: '¿Qué es el NDE?', infoText: 'El Nivel de Daño Económico (NDE) es la densidad de la plaga en la que el costo del control iguala la pérdida económica que causaría. Esta herramienta calcula el NDE para ser usado en el muestreo secuencial.', footerText: '© Todos los derechos reservados.', backToLangSelect: 'Volver a la selección de idioma',
+            seqMainTitle: 'Muestreo Secuencial de Wald', seqSamplingTitle: 'Muestreo', seqInfoText: 'Introduzca el número de minas/folíolo por cada planta. Se recomendará una decisión lo antes posible (mín. 6 muestras).', samplePlaceholder: 'Nº de minas', addBtn: 'Añadir', correctBtn: 'Corregir', resetBtn: 'Reiniciar muestreo', decisionControl: '¡DECISIÓN: Controlar la plaga!', decisionNoControl: 'DECISIÓN: No controlar.', decisionContinue: 'Continúe muestreando...', decisionMaxSamples: 'Máximo de muestras. Decisión final:', seqChartTitle: 'Gráfico de Decisión', chartYAxis: 'Número Acumulado de Minas', chartXAxis: 'Número de Plantas Muestreadas', statsText: 'Promedio: {avg} ({count} muestras)', backToCalculator: 'Volver a la Calculadora de NDE'
+        }};
+
+        const screens = document.querySelectorAll('.screen');
+        function showScreen(screenId) {
+            screens.forEach(s => s.style.display = 'none');
+            const screen = document.getElementById(screenId);
+            screen.style.display = (screenId === 'language-selection-screen') ? 'flex' : 'block';
+        }
+
+        function setLanguage(lang) {
+            appState.lang = lang;
+            const t = translations[lang];
+            
+            document.title = t.pageTitle;
+            document.getElementById('calc-main-title').innerText = t.calcMainTitle;
+            document.getElementById('calc-subtitle').innerText = t.calcSubtitle;
+            document.getElementById('form-title').innerText = t.formTitle;
+            document.getElementById('yield-label').innerText = t.yieldLabel;
+            document.getElementById('yield-option-system').innerText = t.yieldOptionSystem;
+            document.getElementById('yield-option-manual').innerText = t.yieldOptionManual;
+            document.getElementById('producao').placeholder = t.yieldPlaceholder;
+            document.getElementById('price-label').innerText = t.priceLabel;
+            document.getElementById('price-option-system').innerText = t.priceOptionSystem;
+            document.getElementById('price-option-manual').innerText = t.priceOptionManual;
+            document.getElementById('preco_saca').placeholder = t.pricePlaceholder;
+            document.getElementById('tech-label').innerText = t.techLabel;
+            document.getElementById('tech-option-select').innerText = t.techOptionSelect;
+            document.getElementById('main-action-button').innerText = t.mainActionButton;
+            document.getElementById('info-title').innerText = t.infoTitle;
+            document.getElementById('info-text').innerText = t.infoText;
+            document.getElementById('footer-text').innerText = t.footerText;
+            document.getElementById('back-to-lang-select').innerText = t.backToLangSelect;
+            document.getElementById('seq-main-title').innerText = t.seqMainTitle;
+            document.getElementById('seq-sampling-title').innerText = t.seqSamplingTitle;
+            document.getElementById('seq-info-text').innerText = t.seqInfoText;
+            document.getElementById('reset-btn').innerText = t.resetBtn;
+            document.getElementById('seq-chart-title').innerText = t.seqChartTitle;
+            document.getElementById('back-to-calculator').innerText = t.backToCalculator;
+        }
+
+        document.querySelectorAll('.language-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.preventDefault();
+                setLanguage(option.dataset.lang);
+                showScreen('calculator-screen');
+            });
+        });
+
+        const ndeForm = document.getElementById('nde-form');
+        let custo;
+        ndeForm.tecnologia.addEventListener('change', () => {
+            const val = ndeForm.tecnologia.value;
+            if (val === 'manual') custo = 2468.79;
+            else if (val === 'trator') custo = 1963.65;
+            else if (val === 'aviao') custo = 2041.57;
+            else if (val === 'drone') custo = 2352.48;
+            else custo = undefined;
+        });
+        ndeForm.tipo_producao.addEventListener('change', () => ndeForm.producao.style.display = (ndeForm.tipo_producao.value === 'manual') ? 'block' : 'none');
+        ndeForm.tipo_preco.addEventListener('change', () => ndeForm.preco_saca.style.display = (ndeForm.tipo_preco.value === 'manual') ? 'block' : 'none');
+        document.getElementById('main-action-button').addEventListener('click', () => {
+            let producao = (ndeForm.tipo_producao.value === 'manual') ? parseFloat(ndeForm.producao.value) : 3000;
+            let preco = (ndeForm.tipo_preco.value === 'manual') ? parseFloat(ndeForm.preco_saca.value) : 50.00;
+            const errorDiv = document.getElementById('error-message');
+            if (!custo || isNaN(producao) || isNaN(preco) || producao <= 0 || preco <= 0) {
+                errorDiv.innerText = translations[appState.lang].validationError;
+                errorDiv.style.display = 'block';
+                return;
+            }
+            errorDiv.style.display = 'none';
+            const pp_decimal = (custo * 100) / ((producao * preco) * 0.8) / 100;
+            appState.nde = (pp_decimal) / 0.015;
+            initializeSamplingScreen();
+            showScreen('sequential-sampling-screen');
+        });
+        
+        const samplingState = { samples: [] };
+        let chart;
+
+        function initializeSamplingScreen() {
+            setLanguage(appState.lang);
+            samplingState.samples = [];
+            document.getElementById('sampling-list').innerHTML = '';
+            document.getElementById('decision-area').innerHTML = '';
+            document.getElementById('stats-area').innerHTML = '';
+            addSampleRow();
+            initializeChart();
+        }
+
+        function updateDecision() {
+            const sampleCount = samplingState.samples.length;
+            const cumulativeCount = samplingState.samples.reduce((sum, val) => sum + val, 0);
+            const cumulativeAvg = sampleCount > 0 ? cumulativeCount / sampleCount : 0;
+            const t = translations[appState.lang];
+            
+            document.getElementById('stats-area').textContent = sampleCount > 0 ? t.statsText.replace('{avg}', cumulativeAvg.toFixed(2)).replace('{count}', sampleCount) : '';
+            
+            const { b0, s, b1 } = document.getElementById('sampling-list').dataset;
+            const current_Li = parseFloat(b0) + parseFloat(s) * sampleCount;
+            const current_Ls = parseFloat(b1) + parseFloat(s) * sampleCount;
+            let decisionText = '', decisionClass = '', shouldContinue = true;
+
+            if (sampleCount < 6) {
+                decisionText = `${t.decisionContinue} (${sampleCount}/6)`; decisionClass = 'decision-continue';
+            } else if (cumulativeCount >= current_Ls) {
+                decisionText = t.decisionControl; decisionClass = 'decision-control'; shouldContinue = false;
+            } else if (cumulativeCount <= current_Li) {
+                decisionText = t.decisionNoControl; decisionClass = 'decision-nocontrol'; shouldContinue = false;
+            } else if (sampleCount >= 73) {
+                const finalDecision = (cumulativeCount > (current_Li + current_Ls) / 2) ? t.decisionControl : t.decisionNoControl;
+                decisionText = `${t.decisionMaxSamples} ${finalDecision}`;
+                decisionClass = (cumulativeCount > (current_Li + current_Ls) / 2) ? 'decision-control' : 'decision-nocontrol';
+                shouldContinue = false;
+            } else {
+                decisionText = t.decisionContinue; decisionClass = 'decision-continue';
+            }
+            const decisionArea = document.getElementById('decision-area');
+            decisionArea.className = `decision-area ${decisionClass}`;
+            decisionArea.textContent = decisionText;
+            updateChart();
+            return shouldContinue;
+        }
+        
+        function addSampleRow() {
+            if (samplingState.samples.length >= 73) return;
+            const sampleNumber = samplingState.samples.length + 1;
+            const row = document.createElement('div');
+            row.className = 'sample-row';
+            row.id = `row-${sampleNumber}`;
+            const t = translations[appState.lang];
+            row.innerHTML = `<span>${sampleNumber}.</span><input type="number" step="0.1" placeholder="${t.samplePlaceholder}" id="input-${sampleNumber}"><div class="button-container"><button class="button button-small" id="add-btn-${sampleNumber}">${t.addBtn}</button><button class="button button-small button-correct" id="correct-btn-${sampleNumber}" style="display:none;">${t.correctBtn}</button></div>`;
+            document.getElementById('sampling-list').appendChild(row);
+            const input = document.getElementById(`input-${sampleNumber}`);
+            input.focus();
+            document.getElementById(`add-btn-${sampleNumber}`).addEventListener('click', () => processSample(sampleNumber));
+        }
+
+        function processSample(sampleNumber) {
+            const input = document.getElementById(`input-${sampleNumber}`);
+            const pestCount = parseFloat(input.value);
+            if (isNaN(pestCount) || pestCount < 0) { input.style.outline = '2px solid red'; return; }
+            if (sampleNumber > 1) { const prevBtn = document.getElementById(`correct-btn-${sampleNumber-1}`); if(prevBtn) prevBtn.style.display = 'none'; }
+            input.readOnly = true; input.classList.add('completed');
+            samplingState.samples.push(pestCount);
+            document.getElementById(`add-btn-${sampleNumber}`).style.display = 'none';
+            const correctBtn = document.getElementById(`correct-btn-${sampleNumber}`);
+            correctBtn.style.display = 'block';
+            correctBtn.addEventListener('click', () => correctLastSample(sampleNumber), { once: true });
+            if (updateDecision()) addSampleRow();
+        }
+        
+        function correctLastSample(sampleNumber) {
+            const nextRow = document.getElementById(`row-${sampleNumber + 1}`);
+            if (nextRow) nextRow.remove();
+            samplingState.samples.pop();
+            const input = document.getElementById(`input-${sampleNumber}`);
+            input.readOnly = false; input.classList.remove('completed'); input.focus();
+            document.getElementById(`add-btn-${sampleNumber}`).style.display = 'block';
+            document.getElementById(`correct-btn-${sampleNumber}`).style.display = 'none';
+            if (sampleNumber > 1) { const prevBtn = document.getElementById(`correct-btn-${sampleNumber-1}`); if (prevBtn) prevBtn.style.display = 'block';}
+            updateDecision();
+        }
+
+        function initializeChart() {
+            const t = translations[appState.lang];
+            const alpha = 0.10, beta = 0.10, k = 0.73;
+            const m1 = appState.nde, m0 = m1 * 0.50;
+            const denominator = Math.log((m1 * (m0 + k)) / (m0 * (m1 + k)));
+            const b0 = Math.log(beta / (1-alpha)) / denominator;
+            const b1 = Math.log(((1 - beta) / alpha) / denominator);
+            const s = k * ((Math.log((m1+k) / (m0 + k)) / denominator));
+            const list = document.getElementById('sampling-list');
+            list.dataset.b0 = b0; list.dataset.b1 = b1; list.dataset.s = s;
+
+            const ctx = document.getElementById('samplingChart').getContext('2d');
+            if (chart) chart.destroy();
+            const n_values = Array.from({ length: 73 }, (_, i) => i + 1);
+            const Li_values = n_values.map(n => b0 + s * n);
+            const Ls_values = n_values.map(n => b1 + s * n);
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: n_values,
+                    datasets: [
+                        { label: t.chartYAxis, data: [], borderColor: 'rgba(0, 123, 255, 1)', tension: 0.1 },
+                        { label: 'Limite Superior (Ls)', data: Ls_values, borderColor: 'rgba(211, 47, 47, 1)', fill: false, borderWidth: 2, pointRadius: 0, borderDash: [5, 5] },
+                        { label: 'Limite Inferior (Li)', data: Li_values, borderColor: 'rgba(46, 125, 50, 1)', fill: false, borderWidth: 2, pointRadius: 0, borderDash: [5, 5] }
+                    ]
+                },
+                options: { scales: { y: { beginAtZero: true, title: { display: true, text: t.chartYAxis } }, x: { title: { display: true, text: t.chartXAxis } } } }
+            });
+        }
+        
+        function updateChart() {
+            const cumulativeCounts = [];
+            let currentSum = 0;
+            for (let i = 0; i < samplingState.samples.length; i++) {
+                currentSum += samplingState.samples[i];
+                cumulativeCounts.push(currentSum);
+            }
+            chart.data.datasets[0].data = cumulativeCounts;
+            chart.update();
+        }
+
+        document.getElementById('back-to-calculator').addEventListener('click', (e) => { e.preventDefault(); showScreen('calculator-screen'); });
+        document.getElementById('reset-btn').addEventListener('click', initializeSamplingScreen);
+
+        showScreen('language-selection-screen');
+    });
+    </script>
+</body>
+</html>
