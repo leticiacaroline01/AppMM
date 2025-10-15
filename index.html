@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Agrícola Completa</title>
+    <title>AppMIP - Mosca minadora em tomate</title>
+	<link rel="icon" type="image/png" href="https://i.imgur.com/KLzV83f.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -20,11 +21,9 @@
         }
         body { font-family: 'Roboto', sans-serif; margin: 0; background-color: var(--body-bg); color: var(--text-color); line-height: 1.6; }
         
-        /* --- ALTERAÇÃO 1: LARGURA MÁXIMA REDUZIDA --- */
         .container { width: 90%; max-width: 800px; margin: 2rem auto; }
         .screen { display: none; }
 
-        /* Estilos Comuns */
         .card { background-color: var(--card-bg); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px var(--shadow-color); margin-bottom: 2rem; }
         .card h2 { margin-top: 0; font-weight: 500; color: var(--success-color); }
         .header { background: var(--header-gradient); color: white; padding: 1.5rem 0; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -46,14 +45,14 @@
         .language-option { text-decoration: none; color: var(--text-light); font-weight: 500; transition: transform 0.3s ease, color 0.3s ease; }
         .language-option:hover { transform: translateY(-5px); color: var(--primary-color); }
 
-        /* Calculadora NDE */
+        /* Calculo NDE */
         .form-group { margin-bottom: 1.5rem; }
         .form-group label { display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-light); }
         .form-group input, .form-group select { width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
         #error-message { display: none; margin-top: 1.5rem; padding: 1.0rem; border-radius: 8px; font-size: 1rem; text-align: center; font-weight: bold; background-color: #ffcdd2 !important; border: 2px solid var(--error-color) !important; color: var(--error-color) !important; }
         fieldset { border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; }
         
-        /* Amostragem Sequencial */
+        /* Amostragem */
         #sampling-list { display: flex; flex-direction: column; gap: 12px; margin-top: 1.5rem; max-height: 40vh; overflow-y: auto; padding: 5px; }
         .sample-row { display: flex; align-items: center; gap: 10px; }
         .sample-row span { font-weight: 500; font-size: 1.1rem; color: var(--text-light); width: 30px; text-align: right; }
@@ -71,26 +70,25 @@
         .decision-continue { background-color: #ffecb3; color: var(--warning-color); }
         #stats-area { text-align: center; color: var(--text-light); font-size: 1rem; margin-top: 1rem; min-height: 1.2em; }
 
-        /* --- ALTERAÇÃO 2: OTIMIZAÇÕES PARA CELULAR --- */
         @media (max-width: 600px) {
             body {
-                font-size: 15px; /* Reduz a fonte base em telas pequenas */
+                font-size: 15px; 
             }
             .container {
-                width: 95%; /* Usa mais espaço da tela */
+                width: 95%; 
                 margin: 1rem auto;
             }
             .header h1 {
                 font-size: 1.8rem;
             }
             .card {
-                padding: 1.5rem 1rem; /* Reduz o espaçamento interno */
+                padding: 1.5rem 1rem; 
             }
             .language-container {
                 padding: 30px 20px;
             }
             .language-option img {
-                width: 70px; /* Diminui o tamanho das bandeiras */
+                width: 70px; 
             }
             #decision-area {
                 font-size: 1.5rem;
@@ -113,7 +111,7 @@
 
 	<div id="calculator-screen" class="screen">
  	<header class="header">
-   	 <img id="header-logo" src="https://i.imgur.com/jRbFaGJ.png" alt="Logo" width="400">
+   	 <img id="header-logo" src="https://i.imgur.com/jRbFaGJ.png" alt="Logo" width="700">
     		<div class="header-text">
      	 <h1 id="calc-main-title">Mosca minadora tomate</h1>
       	<p id="calc-subtitle" class="sub-heading">Cálculo do NDE para amostragem</p>
@@ -127,7 +125,7 @@
                     <fieldset>
                         <div class="form-group"><label for="tipo_producao" id="yield-label"></label><select id="tipo_producao" name="tipo_producao"><option id="yield-option-system" value="media"></option><option id="yield-option-manual" value="manual"></option></select><input type="number" id="producao" name="producao" style="display:none; margin-top: 10px;"></div>
                         <div class="form-group"><label for="tipo_preco" id="price-label"></label><select id="tipo_preco" name="tipo_preco"><option id="price-option-system" value="media"></option><option id="price-option-manual" value="manual"></option></select><input type="number" id="preco_saca" name="preco_saca" step="0.01" style="display:none; margin-top: 10px;"></div>
-                        <div class="form-group"><label for="tecnologia" id="tech-label"></label><select id="tecnologia" name="tecnologia" required><option id="tech-option-select" value="" disabled selected></option><option value="manual">Manual</option><option value="trator">Trator</option><option value="aviao">Avião / Plane</option><option value="drone">Drone</option></select></div>
+                        <div class="form-group"><label for="tecnologia" id="tech-label"></label><select id="tecnologia" name="tecnologia" required><option id="tech-option-select" value="" disabled selected></option><option value="manual">Manual</option><option value="trator">Trator</option><option value="aviao">Avião</option><option value="drone">Drone</option></select></div>
                     </fieldset>
                     <button type="button" class="button" id="main-action-button"></button>
                 </form>
@@ -149,7 +147,6 @@
                 <p id="seq-info-text"></p>
                 <div id="sampling-list"></div>
                 <div id="decision-area"></div>
-                <div id="stats-area"></div>
                 <button type="button" class="button button-reset" id="reset-btn" style="margin-top:2rem"></button>
             </section>
             <section class="card">
@@ -168,17 +165,17 @@
         const appState = { nde: null, lang: 'pt' };
         const translations = {
             'pt': {
-                calcMainTitle: ' ', calcSubtitle: ' ', formTitle: 'Cálculo do NDE', yieldLabel: 'Produtividade (caixas/ha)', yieldOptionSystem: 'Usar valor do sistema (3000)', yieldOptionManual: 'Digitar manualmente', yieldPlaceholder: 'Digite a produção em caixas/ha', priceLabel: 'Preço (R$/caixa)', priceOptionSystem: 'Usar valor do sistema (R$ 50,00)', priceOptionManual: 'Digitar manualmente', pricePlaceholder: 'Digite o preço por caixa (R$)', techLabel: 'Tecnologia de Aplicação', techOptionSelect: 'Selecione uma opção', mainActionButton: 'Iniciar amostragem', validationError: 'Por favor, preencha todos os campos com valores válidos.', infoTitle: 'O que é o NDE?', infoText: 'O Nível de Dano Econômico (NDE) é a densidade da praga na qual o custo do controle se iguala ao prejuízo econômico que ela causaria. Esta ferramenta calcula o NDE para ser usado na amostragem sequencial.', footerText: '© Todos os direitos reservados.', backToLangSelect: 'Voltar para seleção de idioma',
-                seqMainTitle: 'Amostragem', seqSamplingTitle: '', seqInfoText: 'Insira o número de minas/folíolo para cada planta amostrada. A decisão será recomendada assim que possível.', samplePlaceholder: 'Nº de minas', addBtn: 'Adicionar', correctBtn: 'Corrigir', resetBtn: 'Reiniciar amostragem', decisionControl: 'DECISÃO: Controlar a praga!', decisionNoControl: 'DECISÃO: Não controlar.', decisionContinue: 'Continue amostrando...', decisionMaxSamples: 'Máximo de amostras atingido. Decisão final:', seqChartTitle: 'Gráfico de Decisão', chartYAxis: 'Número Acumulado de Minas', chartXAxis: 'Número de Plantas Amostradas', statsText: 'Média: {avg} ({count} amostras)', backToCalculator: 'Voltar para Calculadora de NDE'
+                calcMainTitle: '', calcSubtitle: ' ', formTitle: 'Cálculo do NDE', yieldLabel: 'Produtividade (caixas/ha)', yieldOptionSystem: 'Usar valor do sistema', yieldOptionManual: 'Digitar manualmente', yieldPlaceholder: 'Digite a produção em caixas/ha', priceLabel: 'Preço (R$/caixa)', priceOptionSystem: 'Usar valor do sistema', priceOptionManual: 'Digitar manualmente', pricePlaceholder: 'Digite o preço por caixa (R$)', techLabel: 'Tecnologia de Aplicação', techOptionSelect: 'Selecione uma opção', mainActionButton: 'Iniciar amostragem', validationError: 'Por favor, preencha todos os campos com valores válidos.', infoTitle: 'O que é o NDE?', infoText: 'O Nível de Dano Econômico (NDE) é a menor densidade em que a praga causa dano econômico.', footerText: '© Todos os direitos reservados.', backToLangSelect: 'Voltar para seleção de idioma',
+                seqMainTitle: 'Amostragem', seqSamplingTitle: '', seqInfoText: 'Insira o número de minas/folíolo para cada planta amostrada. A decisão será recomendada assim que possível.', samplePlaceholder: 'Nº de minas', addBtn: 'Adicionar', correctBtn: 'Corrigir', resetBtn: 'Reiniciar amostragem', decisionControl: 'DECISÃO: Controlar a praga!', decisionNoControl: 'DECISÃO: Não controlar.', decisionContinue: 'Continue amostrando...', decisionMaxSamples: 'Máximo de amostras atingido. Decisão final:', seqChartTitle: 'Gráfico de Decisão', chartYAxis: 'Número Acumulado de Minas', chartXAxis: 'Número de Plantas Amostradas', statsText: '', backToCalculator: 'Voltar'
             },
             'en': { /* English Translations */ }, 'es': { /* Spanish Translations */ }
         };
         translations.en = {...translations.pt, ...{
-            calcMainTitle: 'Leaf Miner in Tomato', calcSubtitle: 'EIL Calculation for Sequential Sampling', formTitle: 'Parameters for EIL Calculation', yieldLabel: 'Yield (boxes/ha)', yieldOptionSystem: 'Use system value (3000)', yieldOptionManual: 'Enter manually', yieldPlaceholder: 'Enter yield in boxes/ha', priceLabel: 'Price ($/box)', priceOptionSystem: 'Use system value ($ 50.00)', priceOptionManual: 'Enter manually', pricePlaceholder: 'Enter price per box ($)', techLabel: 'Application Technology', techOptionSelect: 'Select an option', mainActionButton: 'Start Sequential Sampling', validationError: 'Please fill all fields with valid values.', infoTitle: 'What is the EIL?', infoText: 'The Economic Injury Level (EIL) is the pest density at which the cost of control equals the economic loss it would cause. This tool calculates the EIL for use in sequential sampling.', footerText: '© All rights reserved.', backToLangSelect: 'Back to language selection',
-            seqMainTitle: 'Wald Sequential Sampling', seqSamplingTitle: 'Sampling', seqInfoText: 'Enter the mines/leaflet for each plant. A decision will be recommended ASAP (min. 6 samples).', samplePlaceholder: 'Nº of mines', addBtn: 'Add', correctBtn: 'Edit', resetBtn: 'Reset sampling', decisionControl: 'DECISION: Control the pest!', decisionNoControl: 'DECISION: Do not control.', decisionContinue: 'Continue sampling...', decisionMaxSamples: 'Maximum samples. Decision:', seqChartTitle: 'Decision Chart', chartYAxis: 'Cumulative Number of Mines', chartXAxis: 'Number of Plants Sampled', statsText: 'Average: {avg} ({count} samples)', backToCalculator: 'Back to EIL Calculator'
+            calcMainTitle: '', calcSubtitle: '', formTitle: '', yieldLabel: 'Yield (boxes/ha)', yieldOptionSystem: 'Use system value', yieldOptionManual: 'Enter manually', yieldPlaceholder: 'Enter yield in boxes/ha', priceLabel: 'Price ($/box)', priceOptionSystem: 'Use system value', priceOptionManual: 'Enter manually', pricePlaceholder: 'Enter price per box ($)', techLabel: 'Application Technology', techOptionSelect: 'Select an option', mainActionButton: 'Start Sampling', validationError: 'Please fill all fields with valid values.', infoTitle: 'What is the EIL?', infoText: 'The Economic Injury Level (EIL) What is the Economic Damage Level?', infoText: 'The Economic Damage Level (EDL) is the lowest density at which the pest causes economic damage.', footerText: '© All rights reserved.', backToLangSelect: 'Back to language selection',
+            seqMainTitle: 'Wald Sequential Sampling', seqSamplingTitle: 'Sampling', seqInfoText: 'Enter the mines/leaflet for each plant. A decision will be recommended ASAP.', samplePlaceholder: 'Nº of mines', addBtn: 'Add', correctBtn: 'Edit', resetBtn: 'Reset sampling', decisionControl: 'DECISION: Control the pest!', decisionNoControl: 'DECISION: Do not control.', decisionContinue: 'Continue sampling...', decisionMaxSamples: 'Maximum samples. Decision:', seqChartTitle: 'Decision Chart', chartYAxis: 'Cumulative Number of Mines', chartXAxis: 'Number of Plants Sampled', statsText: 'Average: {avg} ({count} samples)', backToCalculator: 'Back to EIL Calculator'
         }};
         translations.es = {...translations.pt, ...{
-            calcMainTitle: 'Minador de la Hoja en Tomate', calcSubtitle: 'Cálculo de NDE para Muestreo Secuencial', formTitle: 'Parámetros para el Cálculo del NDE', yieldLabel: 'Productividad (cajas/ha)', yieldOptionSystem: 'Usar valor del sistema (3000)', yieldOptionManual: 'Introducir manualmente', yieldPlaceholder: 'Introduzca la producción en cajas/ha', priceLabel: 'Precio ($/caja)', priceOptionSystem: 'Usar valor del sistema ($ 50,00)', priceOptionManual: 'Introducir manualmente', pricePlaceholder: 'Introduzca el precio por caja ($)', techLabel: 'Tecnología de Aplicación', techOptionSelect: 'Seleccione una opción', mainActionButton: 'Iniciar Muestreo Secuencial', validationError: 'Por favor, rellene todos los campos con valores válidos.', infoTitle: '¿Qué es el NDE?', infoText: 'El Nivel de Daño Económico (NDE) es la densidad de la plaga en la que el costo del control iguala la pérdida económica que causaría. Esta herramienta calcula el NDE para ser usado en el muestreo secuencial.', footerText: '© Todos los derechos reservados.', backToLangSelect: 'Volver a la selección de idioma',
+            calcMainTitle: '', calcSubtitle: '', formTitle: '', yieldLabel: 'Productividad (cajas/ha)', yieldOptionSystem: 'Usar valor del sistema', yieldOptionManual: 'Introducir manualmente', yieldPlaceholder: 'Introduzca la producción en cajas/ha', priceLabel: 'Precio ($/caja)', priceOptionSystem: 'Usar valor del sistema', priceOptionManual: 'Introducir manualmente', pricePlaceholder: 'Introduzca el precio por caja ($)', techLabel: 'Tecnología de Aplicación', techOptionSelect: 'Seleccione una opción', mainActionButton: 'Iniciar Muestreo', validationError: 'Por favor, rellene todos los campos con valores válidos.', infoTitle: '¿Qué es el NDE?', infoText: 'El nivel de daño económico (EDL) es la densidad más baja en la que la plaga causa daño económico.', footerText: '© Todos los derechos reservados.', backToLangSelect: 'Volver a la selección de idioma',
             seqMainTitle: 'Muestreo Secuencial de Wald', seqSamplingTitle: 'Muestreo', seqInfoText: 'Introduzca el número de minas/folíolo por cada planta. Se recomendará una decisión lo antes posible (mín. 6 muestras).', samplePlaceholder: 'Nº de minas', addBtn: 'Añadir', correctBtn: 'Corregir', resetBtn: 'Reiniciar muestreo', decisionControl: '¡DECISIÓN: Controlar la plaga!', decisionNoControl: 'DECISIÓN: No controlar.', decisionContinue: 'Continúe muestreando...', decisionMaxSamples: 'Máximo de muestras. Decisión final:', seqChartTitle: 'Gráfico de Decisión', chartYAxis: 'Número Acumulado de Minas', chartXAxis: 'Número de Plantas Muestreadas', statsText: 'Promedio: {avg} ({count} muestras)', backToCalculator: 'Volver a la Calculadora de NDE'
         }};
 
@@ -193,7 +190,7 @@
             appState.lang = lang;
             const t = translations[lang];
             
-            document.title = t.pageTitle;
+            document.title = "AppMIP - Mosca minadora em tomate";
             document.getElementById('calc-main-title').innerText = t.calcMainTitle;
             document.getElementById('calc-subtitle').innerText = t.calcSubtitle;
             document.getElementById('form-title').innerText = t.formTitle;
@@ -264,7 +261,6 @@
             samplingState.samples = [];
             document.getElementById('sampling-list').innerHTML = '';
             document.getElementById('decision-area').innerHTML = '';
-            document.getElementById('stats-area').innerHTML = '';
             addSampleRow();
             initializeChart();
         }
@@ -275,15 +271,14 @@
             const cumulativeAvg = sampleCount > 0 ? cumulativeCount / sampleCount : 0;
             const t = translations[appState.lang];
             
-            document.getElementById('stats-area').textContent = sampleCount > 0 ? t.statsText.replace('{avg}', cumulativeAvg.toFixed(2)).replace('{count}', sampleCount) : '';
-            
+                    
             const { b0, s, b1 } = document.getElementById('sampling-list').dataset;
             const current_Li = parseFloat(b0) + parseFloat(s) * sampleCount;
             const current_Ls = parseFloat(b1) + parseFloat(s) * sampleCount;
             let decisionText = '', decisionClass = '', shouldContinue = true;
 
             if (sampleCount < 6) {
-                decisionText = `${t.decisionContinue} (${sampleCount}/6)`; decisionClass = 'decision-continue';
+                decisionText = `${t.decisionContinue}`; decisionClass = 'decision-continue';
             } else if (cumulativeCount >= current_Ls) {
                 decisionText = t.decisionControl; decisionClass = 'decision-control'; shouldContinue = false;
             } else if (cumulativeCount <= current_Li) {
@@ -386,6 +381,11 @@
 
         document.getElementById('back-to-calculator').addEventListener('click', (e) => { e.preventDefault(); showScreen('calculator-screen'); });
         document.getElementById('reset-btn').addEventListener('click', initializeSamplingScreen);
+
+	document.getElementById('back-to-lang-select').addEventListener('click', (e) => {
+   		 e.preventDefault();
+    		showScreen('language-selection-screen');
+	});
 
         showScreen('language-selection-screen');
     });
