@@ -68,7 +68,7 @@
         .decision-control { background-color: #ffcdd2; color: var(--error-color); }
         .decision-nocontrol { background-color: #c8e6c9; color: var(--success-color); }
         .decision-continue { background-color: #ffecb3; color: var(--warning-color); }
-        #stats-area { text-align: center; color: var(--text-light); font-size: 1rem; margin-top: 1rem; min-height: 1.2em; }
+        #stats-area { text-align: center; color: var(--text-light); font-size: 1.2rem; font-weight: 500; margin-top: 1rem; min-height: 1.2em; }
 
         @media (max-width: 600px) {
             body {
@@ -110,13 +110,13 @@
     </div>
 
 	<div id="calculator-screen" class="screen">
- 	<header class="header">
-   	 <img id="header-logo" src="https://i.imgur.com/jRbFaGJ.png" alt="Logo" width="700">
-    		<div class="header-text">
-     	 <h1 id="calc-main-title">Mosca minadora tomate</h1>
-      	<p id="calc-subtitle" class="sub-heading">Cálculo do NDE para amostragem</p>
-   	 </div>
-  	</header>
+	<header class="header">
+    <img id="header-logo" src="https://i.imgur.com/jRbFaGJ.png" alt="Logo" width="700">
+    	<div class="header-text">
+        <h1 id="calc-main-title">Mosca minadora tomate</h1>
+        <p id="calc-subtitle" class="sub-heading">Cálculo do NDE para amostragem</p>
+    	</div>
+	</header>
 
         <main class="main-content container">
             <section class="card">
@@ -125,7 +125,16 @@
                     <fieldset>
                         <div class="form-group"><label for="tipo_producao" id="yield-label"></label><select id="tipo_producao" name="tipo_producao"><option id="yield-option-system" value="media"></option><option id="yield-option-manual" value="manual"></option></select><input type="number" id="producao" name="producao" style="display:none; margin-top: 10px;"></div>
                         <div class="form-group"><label for="tipo_preco" id="price-label"></label><select id="tipo_preco" name="tipo_preco"><option id="price-option-system" value="media"></option><option id="price-option-manual" value="manual"></option></select><input type="number" id="preco_saca" name="preco_saca" step="0.01" style="display:none; margin-top: 10px;"></div>
-                        <div class="form-group"><label for="tecnologia" id="tech-label"></label><select id="tecnologia" name="tecnologia" required><option id="tech-option-select" value="" disabled selected></option><option value="manual">Manual</option><option value="trator">Trator</option><option value="aviao">Avião</option><option value="drone">Drone</option></select></div>
+                        
+                        <div class="form-group"><label for="tecnologia" id="tech-label"></label>
+                            <select id="tecnologia" name="tecnologia" required>
+                                <option id="tech-option-select" value="" disabled selected></option>
+                                <option id="tech-option-manual" value="manual">Manual</option>
+                                <option id="tech-option-trator" value="trator">Trator</option>
+                                <option id="tech-option-aviao" value="aviao">Avião</option>
+                                <option id="tech-option-drone" value="drone">Drone</option>
+                            </select>
+                        </div>
                     </fieldset>
                     <button type="button" class="button" id="main-action-button"></button>
                 </form>
@@ -134,6 +143,13 @@
             <section class="card">
                 <h2 id="info-title"></h2>
                 <p id="info-text" style="text-align: justify;"></p>
+            </section>
+
+                        <section class="card">
+                <div class="info-section">
+                    <h2 id="info-sampling-title"></h2>
+                    <p id="info-sampling-text" style="text-align: justify;"></p>
+                </div>
             </section>
             <div style="text-align: center;"><a href="#" id="back-to-lang-select" class="back-link"></a></div>
         </main>
@@ -147,6 +163,7 @@
                 <p id="seq-info-text"></p>
                 <div id="sampling-list"></div>
                 <div id="decision-area"></div>
+                <div id="stats-area"></div>
                 <button type="button" class="button button-reset" id="reset-btn" style="margin-top:2rem"></button>
             </section>
             <section class="card">
@@ -163,20 +180,55 @@
     document.addEventListener('DOMContentLoaded', function() {
         // --- ESTADO GLOBAL E TRADUÇÕES ---
         const appState = { nde: null, lang: 'pt' };
+        
         const translations = {
             'pt': {
-                calcMainTitle: '', calcSubtitle: ' ', formTitle: 'Cálculo do NDE', yieldLabel: 'Produtividade (caixas/ha)', yieldOptionSystem: 'Usar valor do sistema', yieldOptionManual: 'Digitar manualmente', yieldPlaceholder: 'Digite a produção em caixas/ha', priceLabel: 'Preço (R$/caixa)', priceOptionSystem: 'Usar valor do sistema', priceOptionManual: 'Digitar manualmente', pricePlaceholder: 'Digite o preço por caixa (R$)', techLabel: 'Tecnologia de Aplicação', techOptionSelect: 'Selecione uma opção', mainActionButton: 'Iniciar amostragem', validationError: 'Por favor, preencha todos os campos com valores válidos.', infoTitle: 'O que é o NDE?', infoText: 'O Nível de Dano Econômico (NDE) é a menor densidade em que a praga causa dano econômico.', footerText: '© Todos os direitos reservados.', backToLangSelect: 'Voltar para seleção de idioma',
-                seqMainTitle: 'Amostragem', seqSamplingTitle: '', seqInfoText: 'Insira o número de minas/folíolo para cada planta amostrada. A decisão será recomendada assim que possível.', samplePlaceholder: 'Nº de minas', addBtn: 'Adicionar', correctBtn: 'Corrigir', resetBtn: 'Reiniciar amostragem', decisionControl: 'DECISÃO: Controlar a praga!', decisionNoControl: 'DECISÃO: Não controlar.', decisionContinue: 'Continue amostrando...', decisionMaxSamples: 'Máximo de amostras atingido. Decisão final:', seqChartTitle: 'Gráfico de Decisão', chartYAxis: 'Número Acumulado de Minas', chartXAxis: 'Número de Plantas Amostradas', statsText: '', backToCalculator: 'Voltar'
+                calcMainTitle: '', calcSubtitle: ' ', formTitle: 'Cálculo do NDE', yieldLabel: 'Produtividade (caixas/ha)', 
+                yieldOptionSystem: 'Usar valor do sistema', 
+                yieldOptionManual: 'Digitar manualmente', 
+                yieldPlaceholder: 'Digite a produção em caixas/ha', 
+                priceLabel: 'Preço (R$/caixa)', 
+                priceOptionSystem: 'Usar valor do sistema', 
+                priceOptionManual: 'Digitar manualmente', pricePlaceholder: 'Digite o preço por caixa (R$)', 
+                techLabel: 'Tecnologia de aplicação', techOptionSelect: 'Selecione uma opção', 
+                techOptionManual: 'Manual', techOptionTrator: 'Trator', techOptionAviao: 'Avião', techOptionDrone: 'Drone', 
+                mainActionButton: 'Iniciar amostragem', validationError: 'Por favor, preencha todos os campos com valores válidos.', 
+                infoTitle: 'O que é o NDE?', infoText: 'O Nível de Dano Econômico (NDE) é a menor densidade em que a praga causa dano econômico.', 
+                infoSamplingTitle: 'Como fazer a amostragem?',
+                infoSamplingText: 'Divida as áreas das lavouras de tomate em talhões homogêneos. Subdividir cada talhão em 73 subáreas de tamanhos semelhantes. Em cada subárea, selecione uma planta ao acaso. Nesta planta, avalie uma folha localizada entre os terços mediano e o basal do dossel. Conte o número de minas ativas (aquelas que apresentam larvas vivas) nessa folha. Anote esse número de minas no aplicativo. Repita o procedimento nas subáreas seguintes até que o aplicativo indique se a praga deve ou não ser controlada no talhão.',
+                footerText: '© Todos os direitos reservados.', backToLangSelect: 'Voltar para seleção de idioma',
+                seqMainTitle: 'Amostragem', seqSamplingTitle: '', seqInfoText: 'Insira o número de minas/folíolo para cada planta amostrada. A decisão será recomendada assim que possível.', samplePlaceholder: 'Nº de minas', addBtn: 'Adicionar', correctBtn: 'Corrigir', resetBtn: 'Reiniciar amostragem', decisionControl: 'DECISÃO: Controlar a praga!', decisionNoControl: 'DECISÃO: Não controlar.', decisionContinue: 'Continue amostrando...', decisionMaxSamples: 'Máximo de amostras atingido. Decisão final:', seqChartTitle: 'Gráfico de Decisão', chartYAxis: 'Número Acumulado de Minas', chartXAxis: 'Número de Plantas Amostradas',
+                statsText: 'Densidade média: {avg} minas/folha',
+                savingsText: 'Economia em relação ao plano convencional: {savings}%',
+                backToCalculator: 'Voltar'
             },
             'en': { /* English Translations */ }, 'es': { /* Spanish Translations */ }
         };
         translations.en = {...translations.pt, ...{
-            calcMainTitle: '', calcSubtitle: '', formTitle: '', yieldLabel: 'Yield (boxes/ha)', yieldOptionSystem: 'Use system value', yieldOptionManual: 'Enter manually', yieldPlaceholder: 'Enter yield in boxes/ha', priceLabel: 'Price ($/box)', priceOptionSystem: 'Use system value', priceOptionManual: 'Enter manually', pricePlaceholder: 'Enter price per box ($)', techLabel: 'Application Technology', techOptionSelect: 'Select an option', mainActionButton: 'Start Sampling', validationError: 'Please fill all fields with valid values.', infoTitle: 'What is the EIL?', infoText: 'The Economic Injury Level (EIL) What is the Economic Damage Level?', infoText: 'The Economic Damage Level (EDL) is the lowest density at which the pest causes economic damage.', footerText: '© All rights reserved.', backToLangSelect: 'Back to language selection',
-            seqMainTitle: 'Wald Sequential Sampling', seqSamplingTitle: 'Sampling', seqInfoText: 'Enter the mines/leaflet for each plant. A decision will be recommended ASAP.', samplePlaceholder: 'Nº of mines', addBtn: 'Add', correctBtn: 'Edit', resetBtn: 'Reset sampling', decisionControl: 'DECISION: Control the pest!', decisionNoControl: 'DECISION: Do not control.', decisionContinue: 'Continue sampling...', decisionMaxSamples: 'Maximum samples. Decision:', seqChartTitle: 'Decision Chart', chartYAxis: 'Cumulative Number of Mines', chartXAxis: 'Number of Plants Sampled', statsText: 'Average: {avg} ({count} samples)', backToCalculator: 'Back to EIL Calculator'
+            calcMainTitle: '', calcSubtitle: '', formTitle: '', yieldLabel: 'Yield (boxes/ha)', yieldOptionSystem: 'Use system value', yieldOptionManual: 'Enter manually', yieldPlaceholder: 'Enter yield in boxes/ha', priceLabel: 'Price ($/box)', priceOptionSystem: 'Use system value', priceOptionManual: 'Enter manually', pricePlaceholder: 'Enter price per box ($)', 
+            techLabel: 'Application Technology', techOptionSelect: 'Select an option', 
+            techOptionManual: 'Manual', techOptionTrator: 'Tractor', techOptionAviao: 'Airplane', techOptionDrone: 'Drone', 
+            mainActionButton: 'Start Sampling', validationError: 'Please fill all fields with valid values.', infoTitle: 'What is the EIL?', infoText: 'The Economic Injury Level (EIL) What is the Economic Damage Level?', infoText: 'The Economic Damage Level (EDL) is the lowest density at which the pest causes economic damage.', 
+            infoSamplingTitle: 'How to do the sampling?',
+            infoSamplingText: 'Divide the areas of the tomato crops into homogeneous plots. Subdivide each plot into 73 sub-areas of similar sizes. In each sub-area, randomly select one plant. On this plant, evaluate a leaf located between the middle and basal thirds of the canopy. Count the number of active mines (those with live larvae) on that leaf. Record this number of mines in the application. Repeat the procedure in the following sub-areas until the application indicates whether or not the pest should be controlled in the plot.',
+            footerText: '© All rights reserved.', backToLangSelect: 'Back to language selection',
+            seqMainTitle: 'Wald Sequential Sampling', seqSamplingTitle: 'Sampling', seqInfoText: 'Enter the mines/leaflet for each plant. A decision will be recommended ASAP.', samplePlaceholder: 'Nº of mines', addBtn: 'Add', correctBtn: 'Edit', resetBtn: 'Reset sampling', decisionControl: 'DECISION: Control the pest!', decisionNoControl: 'DECISION: Do not control.', decisionContinue: 'Continue sampling...', decisionMaxSamples: 'Maximum samples. Decision:', seqChartTitle: 'Decision Chart', chartYAxis: 'Cumulative Number of Mines', chartXAxis: 'Number of Plants Sampled',
+            statsText: 'Average density: {avg} mines/leaf',
+            savingsText: 'Savings compared to conventional plan: {savings}%',
+            backToCalculator: 'Back to EIL Calculator'
         }};
         translations.es = {...translations.pt, ...{
-            calcMainTitle: '', calcSubtitle: '', formTitle: '', yieldLabel: 'Productividad (cajas/ha)', yieldOptionSystem: 'Usar valor del sistema', yieldOptionManual: 'Introducir manualmente', yieldPlaceholder: 'Introduzca la producción en cajas/ha', priceLabel: 'Precio ($/caja)', priceOptionSystem: 'Usar valor del sistema', priceOptionManual: 'Introducir manualmente', pricePlaceholder: 'Introduzca el precio por caja ($)', techLabel: 'Tecnología de Aplicación', techOptionSelect: 'Seleccione una opción', mainActionButton: 'Iniciar Muestreo', validationError: 'Por favor, rellene todos los campos con valores válidos.', infoTitle: '¿Qué es el NDE?', infoText: 'El nivel de daño económico (EDL) es la densidad más baja en la que la plaga causa daño económico.', footerText: '© Todos los derechos reservados.', backToLangSelect: 'Volver a la selección de idioma',
-            seqMainTitle: 'Muestreo Secuencial de Wald', seqSamplingTitle: 'Muestreo', seqInfoText: 'Introduzca el número de minas/folíolo por cada planta. Se recomendará una decisión lo antes posible (mín. 6 muestras).', samplePlaceholder: 'Nº de minas', addBtn: 'Añadir', correctBtn: 'Corregir', resetBtn: 'Reiniciar muestreo', decisionControl: '¡DECISIÓN: Controlar la plaga!', decisionNoControl: 'DECISIÓN: No controlar.', decisionContinue: 'Continúe muestreando...', decisionMaxSamples: 'Máximo de muestras. Decisión final:', seqChartTitle: 'Gráfico de Decisión', chartYAxis: 'Número Acumulado de Minas', chartXAxis: 'Número de Plantas Muestreadas', statsText: 'Promedio: {avg} ({count} muestras)', backToCalculator: 'Volver a la Calculadora de NDE'
+            calcMainTitle: '', calcSubtitle: '', formTitle: '', yieldLabel: 'Productividad (cajas/ha)', yieldOptionSystem: 'Usar valor del sistema', yieldOptionManual: 'Introducir manualmente', yieldPlaceholder: 'Introduzca la producción en cajas/ha', priceLabel: 'Precio ($/caja)', priceOptionSystem: 'Usar valor del sistema', priceOptionManual: 'Introducir manualmente', pricePlaceholder: 'Introduzca el precio por caja ($)', 
+            techLabel: 'Tecnología de Aplicación', techOptionSelect: 'Seleccione una opción', 
+            techOptionManual: 'Manual', techOptionTrator: 'Tractor', techOptionAviao: 'Avión', techOptionDrone: 'Drone', 
+            mainActionButton: 'Iniciar Muestreo', validationError: 'Por favor, rellene todos los campos con valores válidos.', infoTitle: '¿Qué es el NDE?', infoText: 'El nivel de daño económico (EDL) es la densidad más baja en la que la plaga causa daño económico.', 
+            infoSamplingTitle: '¿Cómo hacer el muestreo?',
+            infoSamplingText: 'Divida las áreas de los cultivos de tomate en parcelas homogéneas. Subdivida cada parcela en 73 subáreas de tamaños similares. En cada subárea, seleccione una planta al azar. En esta planta, evalúe una hoja ubicada entre los tercios medio y basal del dosel. Cuente el número de minas activas (aquellas con larvas vivas) en esa hoja. Anote este número de minas en la aplicación. Repita el procedimiento en las siguientes subáreas hasta que la aplicación indique si se debe controlar o no la plaga en la parcela.',
+            footerText: '© Todos los direitos reservados.', backToLangSelect: 'Volver a la selección de idioma',
+            seqMainTitle: 'Muestreo Secuencial de Wald', seqSamplingTitle: 'Muestreo', seqInfoText: 'Introduzca el número de minas/folíolo por cada planta. Se recomendará una decisión lo antes posible (mín. 6 muestras).', samplePlaceholder: 'Nº de minas', addBtn: 'Añadir', correctBtn: 'Corregir', resetBtn: 'Reiniciar muestreo', decisionControl: '¡DECISIÓN: Controlar la plaga!', decisionNoControl: 'DECISIÓN: No controlar.', decisionContinue: 'Continúe muestreando...', decisionMaxSamples: 'Máximo de muestras. Decisión final:', seqChartTitle: 'Gráfico de Decisión', chartYAxis: 'Número Acumulado de Minas', chartXAxis: 'Número de Plantas Muestreadas',
+            statsText: 'Densidad media: {avg} minas/hoja',
+            savingsText: 'Ahorro en comparación con el plan convencional: {savings}%',
+            backToCalculator: 'Volver a la Calculadora de NDE'
         }};
 
         const screens = document.querySelectorAll('.screen');
@@ -204,9 +256,15 @@
             document.getElementById('preco_saca').placeholder = t.pricePlaceholder;
             document.getElementById('tech-label').innerText = t.techLabel;
             document.getElementById('tech-option-select').innerText = t.techOptionSelect;
+            document.getElementById('tech-option-manual').innerText = t.techOptionManual;
+            document.getElementById('tech-option-trator').innerText = t.techOptionTrator;
+            document.getElementById('tech-option-aviao').innerText = t.techOptionAviao;
+            document.getElementById('tech-option-drone').innerText = t.techOptionDrone;
             document.getElementById('main-action-button').innerText = t.mainActionButton;
             document.getElementById('info-title').innerText = t.infoTitle;
             document.getElementById('info-text').innerText = t.infoText;
+		    document.getElementById('info-sampling-title').innerText = t.infoSamplingTitle; 
+		    document.getElementById('info-sampling-text').innerText = t.infoSamplingText;  
             document.getElementById('footer-text').innerText = t.footerText;
             document.getElementById('back-to-lang-select').innerText = t.backToLangSelect;
             document.getElementById('seq-main-title').innerText = t.seqMainTitle;
@@ -215,6 +273,8 @@
             document.getElementById('reset-btn').innerText = t.resetBtn;
             document.getElementById('seq-chart-title').innerText = t.seqChartTitle;
             document.getElementById('back-to-calculator').innerText = t.backToCalculator;
+
+            updateCostBasedOnLanguage();
         }
 
         document.querySelectorAll('.language-option').forEach(option => {
@@ -227,28 +287,57 @@
 
         const ndeForm = document.getElementById('nde-form');
         let custo;
-        ndeForm.tecnologia.addEventListener('change', () => {
-            const val = ndeForm.tecnologia.value;
-            if (val === 'manual') custo = 2468.79;
-            else if (val === 'trator') custo = 1963.65;
-            else if (val === 'aviao') custo = 2041.57;
-            else if (val === 'drone') custo = 2352.48;
-            else custo = undefined;
-        });
+
+        function updateCostBasedOnLanguage() {
+            const val = ndeForm.tecnologia.value; 
+            if (!val) { 
+                custo = undefined;
+                return;
+            }
+
+            const dollarRate = 5.50;
+            const custosBRL = {
+                'manual': 2468.79,
+                'trator': 1963.65,
+                'aviao': 2041.57,
+                'drone': 2352.48
+            };
+            
+            let baseCusto = custosBRL[val]; 
+            
+            if (baseCusto) {
+                custo = (appState.lang === 'en') ? (baseCusto / dollarRate) : baseCusto;
+            } else {
+                custo = undefined;
+            }
+        }
+
+        ndeForm.tecnologia.addEventListener('change', updateCostBasedOnLanguage);
+        
         ndeForm.tipo_producao.addEventListener('change', () => ndeForm.producao.style.display = (ndeForm.tipo_producao.value === 'manual') ? 'block' : 'none');
         ndeForm.tipo_preco.addEventListener('change', () => ndeForm.preco_saca.style.display = (ndeForm.tipo_preco.value === 'manual') ? 'block' : 'none');
+        
         document.getElementById('main-action-button').addEventListener('click', () => {
             let producao = (ndeForm.tipo_producao.value === 'manual') ? parseFloat(ndeForm.producao.value) : 3000;
-            let preco = (ndeForm.tipo_preco.value === 'manual') ? parseFloat(ndeForm.preco_saca.value) : 50.00;
+            
+            const defaultPriceBRL = 50.00;
+            const dollarRate = 5.50;
+            let defaultPrice = (appState.lang === 'en') ? (defaultPriceBRL / dollarRate) : defaultPriceBRL;
+            
+            let preco = (ndeForm.tipo_preco.value === 'manual') ? parseFloat(ndeForm.preco_saca.value) : defaultPrice;
+
             const errorDiv = document.getElementById('error-message');
+            
             if (!custo || isNaN(producao) || isNaN(preco) || producao <= 0 || preco <= 0) {
                 errorDiv.innerText = translations[appState.lang].validationError;
                 errorDiv.style.display = 'block';
                 return;
             }
             errorDiv.style.display = 'none';
+
             const pp_decimal = (custo * 100) / ((producao * preco) * 0.8) / 100;
             appState.nde = (pp_decimal) / 0.015;
+            
             initializeSamplingScreen();
             showScreen('sequential-sampling-screen');
         });
@@ -257,22 +346,29 @@
         let chart;
 
         function initializeSamplingScreen() {
-            setLanguage(appState.lang);
+            setLanguage(appState.lang); // Garante que a lingua está setada antes de inicializar o gráfico
             samplingState.samples = [];
             document.getElementById('sampling-list').innerHTML = '';
             document.getElementById('decision-area').innerHTML = '';
+            document.getElementById('stats-area').innerHTML = '';
             addSampleRow();
-            initializeChart();
+            initializeChart(); // Agora chama depois de setLanguage
         }
 
         function updateDecision() {
             const sampleCount = samplingState.samples.length;
             const cumulativeCount = samplingState.samples.reduce((sum, val) => sum + val, 0);
-            const cumulativeAvg = sampleCount > 0 ? cumulativeCount / sampleCount : 0;
             const t = translations[appState.lang];
             
-                    
             const { b0, s, b1 } = document.getElementById('sampling-list').dataset;
+            
+            // Adiciona verificação se os data attributes existem e são números
+             if (b0 === undefined || s === undefined || b1 === undefined || isNaN(parseFloat(b0)) || isNaN(parseFloat(s)) || isNaN(parseFloat(b1))) {
+                console.error("Erro: Parâmetros b0, s, b1 não definidos ou inválidos nos data attributes.");
+                // Você pode querer exibir uma mensagem de erro aqui também
+                return false; // Retorna false para indicar que não deve continuar
+            }
+
             const current_Li = parseFloat(b0) + parseFloat(s) * sampleCount;
             const current_Ls = parseFloat(b1) + parseFloat(s) * sampleCount;
             let decisionText = '', decisionClass = '', shouldContinue = true;
@@ -295,6 +391,22 @@
             decisionArea.className = `decision-area ${decisionClass}`;
             decisionArea.textContent = decisionText;
             updateChart();
+
+            const statsArea = document.getElementById('stats-area');
+            if (!shouldContinue && sampleCount > 0) { 
+                const averageDensity = (cumulativeCount / sampleCount).toFixed(2);
+                const densityText = t.statsText.replace('{avg}', averageDensity);
+
+                const savings = ((73 - sampleCount) / 73) * 100;
+                const savingsFormatted = savings.toFixed(2);
+                const savingsText = t.savingsText.replace('{savings}', savingsFormatted);
+                
+                statsArea.innerHTML = `<p style="margin: 0;">${densityText}</p><p style="margin: 0.5rem 0 0 0;">${savingsText}</p>`;
+
+            } else {
+                statsArea.innerHTML = ''; 
+            }
+            
             return shouldContinue;
         }
         
@@ -338,14 +450,66 @@
             updateDecision();
         }
 
+        // ✅ --- FUNÇÃO initializeChart ATUALIZADA ---
         function initializeChart() {
-            const t = translations[appState.lang];
+            const t = translations[appState.lang]; // Garante que t está definido com a lingua atual
             const alpha = 0.10, beta = 0.10, k = 0.73;
+            
+            // --- INÍCIO DA VERIFICAÇÃO ---
+            // Verifica se o NDE é um número válido e positivo
+            if (typeof appState.nde !== 'number' || isNaN(appState.nde) || appState.nde <= 0) {
+                console.error("Erro: NDE inválido calculado:", appState.nde);
+                const decisionArea = document.getElementById('decision-area');
+                decisionArea.className = 'decision-area decision-control'; 
+                decisionArea.textContent = "Erro no cálculo dos parâmetros. Verifique os valores de entrada.";
+                 document.getElementById('sampling-list').innerHTML = ''; 
+                return; 
+            }
+            // --- FIM DA VERIFICAÇÃO ---
+
             const m1 = appState.nde, m0 = m1 * 0.50;
-            const denominator = Math.log((m1 * (m0 + k)) / (m0 * (m1 + k)));
+            
+            // Adicionando verificação extra para o denominador e argumentos do log
+            const logArgM = (m1 * (m0 + k)) / (m0 * (m1 + k));
+            const logArgSK = (m1+k) / (m0 + k);
+
+            // Verifica se os argumentos do log são válidos (maiores que 0)
+            if (logArgM <= 0 || logArgSK <= 0) {
+                 console.error("Erro: Argumento inválido para Math.log", {logArgM, logArgSK});
+                 const decisionArea = document.getElementById('decision-area');
+                 decisionArea.className = 'decision-area decision-control';
+                 decisionArea.textContent = "Erro nos cálculos internos (log). Verifique os valores.";
+                 document.getElementById('sampling-list').innerHTML = ''; 
+                 return;
+            }
+
+            const denominator = Math.log(logArgM);
+
+            // Verifica se o denominador é zero
+             if (denominator === 0) {
+                 console.error("Erro: Denominador zero nos cálculos dos limites.");
+                 const decisionArea = document.getElementById('decision-area');
+                 decisionArea.className = 'decision-area decision-control';
+                 decisionArea.textContent = "Erro nos cálculos internos (divisão por zero). Verifique os valores.";
+                 document.getElementById('sampling-list').innerHTML = ''; 
+                 return;
+            }
+
             const b0 = Math.log(beta / (1-alpha)) / denominator;
-            const b1 = Math.log(((1 - beta) / alpha) / denominator);
-            const s = k * ((Math.log((m1+k) / (m0 + k)) / denominator));
+            const b1 = Math.log((1 - beta) / alpha) / denominator; // Parêntese corrigido aqui
+            const s = k * (Math.log(logArgSK) / denominator);
+            
+            // Verifica se b0, b1 ou s resultaram em NaN ou Infinity
+             if (isNaN(b0) || !isFinite(b0) || isNaN(b1) || !isFinite(b1) || isNaN(s) || !isFinite(s)) {
+                 console.error("Erro: Cálculo de b0, b1 ou s resultou inválido", {b0, b1, s});
+                 const decisionArea = document.getElementById('decision-area');
+                 decisionArea.className = 'decision-area decision-control';
+                 decisionArea.textContent = "Erro crítico nos cálculos dos limites. Verifique os valores.";
+                 document.getElementById('sampling-list').innerHTML = ''; 
+                 return;
+            }
+
+
             const list = document.getElementById('sampling-list');
             list.dataset.b0 = b0; list.dataset.b1 = b1; list.dataset.s = s;
 
@@ -369,6 +533,11 @@
         }
         
         function updateChart() {
+            // Verifica se o objeto chart existe antes de tentar atualizar
+             if (!chart || !chart.data || !chart.data.datasets || !chart.data.datasets[0]) {
+                console.error("Tentando atualizar gráfico não inicializado ou inválido.");
+                return; 
+            }
             const cumulativeCounts = [];
             let currentSum = 0;
             for (let i = 0; i < samplingState.samples.length; i++) {
@@ -382,10 +551,10 @@
         document.getElementById('back-to-calculator').addEventListener('click', (e) => { e.preventDefault(); showScreen('calculator-screen'); });
         document.getElementById('reset-btn').addEventListener('click', initializeSamplingScreen);
 
-	document.getElementById('back-to-lang-select').addEventListener('click', (e) => {
-   		 e.preventDefault();
-    		showScreen('language-selection-screen');
-	});
+	    document.getElementById('back-to-lang-select').addEventListener('click', (e) => {
+    		 e.preventDefault();
+    		 showScreen('language-selection-screen');
+	    });
 
         showScreen('language-selection-screen');
     });
